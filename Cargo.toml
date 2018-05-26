@@ -1,0 +1,11 @@
+[package]
+name = "teletext"
+version = "0.1.0"
+authors = ["Ross Nomann <rossnomann@protonmail.com>"]
+
+[dependencies]
+dotenv = "0.12.0"
+futures = "0.1"
+regex = "1.0"
+telegram-bot = { version = "0.6", features = ["curl_connector"] }
+tokio-core = "0.1"
