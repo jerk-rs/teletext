@@ -25,6 +25,10 @@ to `.env` file in order to use a socks5 proxy.
 
 # Changelog
 
+### 0.1.1 (26.05.2018)
+
+- Check text len before conversion.
+
 ### 0.1.0 (26.05.2018)
 
 - First release.

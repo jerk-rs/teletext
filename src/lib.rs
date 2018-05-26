@@ -18,6 +18,10 @@ impl Transformer {
             match (caps.get(1), caps.get(2)) {
                 (Some(cmd), Some(text)) => {
                     let text = text.as_str().trim();
+                    let text_size = text.len();
+                    if text_size < 3 || text_size > 500 {
+                        return None;
+                    }
                     Some(match cmd.as_str() {
                         "square" => to_square(text),
                         "star" => to_star(text),
