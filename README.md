@@ -25,6 +25,10 @@ to `.env` file in order to use a socks5 proxy.
 
 # Changelog
 
+### 0.1.2 (27.05.2018)
+
+- Handle bot name.
+
 ### 0.1.1 (26.05.2018)
 
 - Check text len before conversion.
