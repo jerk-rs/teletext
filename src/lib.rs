@@ -25,6 +25,7 @@ impl Transformer {
                     Some(match cmd.as_str() {
                         "square" => to_square(text),
                         "star" => to_star(text),
+                        "sw" => to_sw(text),
                         "qstar" => to_qstar(text),
                         _ => return None,
                     })
@@ -158,6 +159,61 @@ fn to_qstar(s: &str) -> String {
     output
 }
 
+#[allow(dead_code)]
+fn to_sw(s: &str) -> String {
+    let chars = collect_chars(s);
+    let len = chars.len();
+    let mut buf = String::new();
+
+    // top lines
+    for (a, b) in (0..len).zip((1..len).rev()) {
+        buf.push(chars[a]);
+        buf.extend(vec![' '; (len - 2) * 2 + 1]);
+        if a == 0 {
+            for x in chars.iter().rev() {
+                buf.push(*x);
+                buf.push(' ');
+            }
+        } else {
+            buf.push(chars[b]);
+        }
+        buf.push('\n');
+    }
+
+    // middle line
+    for &c in chars.iter().skip(1).rev() {
+        buf.push(c);
+        buf.push(' ');
+    }
+    for (i, &c) in chars.iter().enumerate() {
+        buf.push(c);
+        if i == len - 1 {
+            buf.push('\n')
+        } else {
+            buf.push(' ')
+        }
+    }
+
+    // bottom lines
+    for (a, b) in (1..len).zip((0..len - 1).rev()) {
+        if b == 0 {
+            for x in chars.iter() {
+                buf.push(*x);
+                buf.push(' ');
+            }
+            buf.extend(vec![' '; (len - 2) * 2]);
+        } else {
+            buf.extend(vec![' '; (len - 1) * 2]);
+            buf.push(chars[a]);
+            buf.extend(vec![' '; (len - 2) * 2 + 1]);
+        }
+        buf.push(chars[b]);
+        buf.push('\n');
+    }
+
+    buf
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -192,6 +248,21 @@ mod tests {
         assert_eq!(lines.next(), Some("T     T"));
     }
 
+    fn assert_text_sw(text: &str) {
+        let mut lines = text.lines();
+        assert_eq!(lines.next(), Some("R         T S U R U R "));
+        assert_eq!(lines.next(), Some("U         S"));
+        assert_eq!(lines.next(), Some("R         U"));
+        assert_eq!(lines.next(), Some("U         R"));
+        assert_eq!(lines.next(), Some("S         U"));
+        assert_eq!(lines.next(), Some("T S U R U R U R U S T"));
+        assert_eq!(lines.next(), Some("          U         S"));
+        assert_eq!(lines.next(), Some("          R         U"));
+        assert_eq!(lines.next(), Some("          U         R"));
+        assert_eq!(lines.next(), Some("          S         U"));
+        assert_eq!(lines.next(), Some("R U R U S T         R"));
+    }
+
     #[test]
     fn it_works() {
         let tf = Transformer::new();
@@ -209,6 +280,11 @@ mod tests {
         for i in vec!["/qstar@bot text", "/qstar text", "/qstar@s_oMe_bot text"] {
             let data = tf.transform(i).unwrap();
             assert_text_qstar(&data);
+        }
+
+        for i in vec!["/sw@bot rurust", "/sw rurust", "/sw@s_oMe_bot rurust"] {
+            let data = tf.transform(i).unwrap();
+            assert_text_sw(&data);
         }
     }
 
