@@ -37,9 +37,17 @@ impl Transformer {
     }
 }
 
+fn collect_chars(s: &str) -> Vec<char> {
+    s.chars().flat_map(|c| c.to_uppercase()).collect()
+}
+
+fn sqr(x: usize) -> usize {
+    x * x
+}
+
 fn to_square(s: &str) -> String {
-    let s: Vec<char> = s.chars().flat_map(|c| c.to_uppercase()).collect();
-    let len = s.len();
+    let chars = s.chars().flat_map(|c| c.to_uppercase()).collect::<Vec<_>>();
+    let len = chars.len();
     let side = len * 2 - 1;
     let area = side * side;
     let mut buf = String::with_capacity(area * 2 - 1);
@@ -49,7 +57,7 @@ fn to_square(s: &str) -> String {
         row_idx = if row >= len { side - row - 1 } else { row };
         for col in 0..side {
             col_idx = if col >= len { side - col - 1 } else { col };
-            buf.push(s[len - 1 - if row_idx <= col_idx { row_idx } else { col_idx }]);
+            buf.push(chars[len - 1 - if row_idx <= col_idx { row_idx } else { col_idx }]);
             if col != side - 1 {
                 buf.push(' ');
             }
@@ -62,8 +70,7 @@ fn to_square(s: &str) -> String {
 }
 
 fn to_star(s: &str) -> String {
-    let chars = s.chars().flat_map(|c| c.to_uppercase()).collect::<Vec<_>>();
-    let sqr = |x| x * x;
+    let chars = collect_chars(s);
     let len = chars.len();
     let mut output = String::with_capacity(sqr(len * 2));
 
@@ -122,12 +129,8 @@ fn to_star(s: &str) -> String {
     output
 }
 
-fn to_qstar(input: &str) -> String {
-    let chars = input
-        .chars()
-        .flat_map(|c| c.to_uppercase())
-        .collect::<Vec<_>>();
-    let sqr = |x| x * x;
+fn to_qstar(s: &str) -> String {
+    let chars = collect_chars(s);
     let len = chars.len();
     let mut output = String::with_capacity(sqr(len * 2));
 
