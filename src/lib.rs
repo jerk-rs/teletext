@@ -9,13 +9,13 @@ pub struct Transformer {
 impl Transformer {
     pub fn new() -> Transformer {
         Transformer {
-            cmd_pattern: Regex::new(r"^/([a-z]+)(.*)$").unwrap(),
+            cmd_pattern: Regex::new(r"([A-z_]+)(@[A-z_]+)?(.*)").unwrap(),
         }
     }
 
     pub fn transform(&self, data: &str) -> Option<String> {
         if let Some(caps) = self.cmd_pattern.captures(data) {
-            match (caps.get(1), caps.get(2)) {
+            match (caps.get(1), caps.get(3)) {
                 (Some(cmd), Some(text)) => {
                     let text = text.as_str().trim();
                     let text_size = text.len();
@@ -153,4 +153,74 @@ fn to_qstar(input: &str) -> String {
     }
 
     output
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn assert_text_square(text: &str) {
+        let mut lines = text.lines();
+        assert_eq!(lines.next(), Some("T T T T T T T"));
+        assert_eq!(lines.next(), Some("T X X X X X T"));
+        assert_eq!(lines.next(), Some("T X E E E X T"));
+        assert_eq!(lines.next(), Some("T X E T E X T"));
+        assert_eq!(lines.next(), Some("T X E E E X T"));
+        assert_eq!(lines.next(), Some("T X X X X X T"));
+        assert_eq!(lines.next(), Some("T T T T T T T"));
+    }
+
+    fn assert_text_star(text: &str) {
+        let mut lines = text.lines();
+        assert_eq!(lines.next(), Some("T     T     T"));
+        assert_eq!(lines.next(), Some("  X   X   X"));
+        assert_eq!(lines.next(), Some("    E E E"));
+        assert_eq!(lines.next(), Some("T X E T E X T"));
+        assert_eq!(lines.next(), Some("    E E E"));
+        assert_eq!(lines.next(), Some("  X   X   X"));
+        assert_eq!(lines.next(), Some("T     T     T"));
+    }
+
+    fn assert_text_qstar(text: &str) {
+        let mut lines = text.lines();
+        assert_eq!(lines.next(), Some("T E X T"));
+        assert_eq!(lines.next(), Some("E E"));
+        assert_eq!(lines.next(), Some("X   X"));
+        assert_eq!(lines.next(), Some("T     T"));
+    }
+
+    #[test]
+    fn it_works() {
+        let tf = Transformer::new();
+
+        for i in vec!["/square@bot text", "/square text", "/square@s_oMe_bot text"] {
+            let data = tf.transform(i).unwrap();
+            assert_text_square(&data);
+        }
+
+        for i in vec!["/star@bot text", "/star text", "/star@s_oMe_bot text"] {
+            let data = tf.transform(i).unwrap();
+            assert_text_star(&data);
+        }
+
+        for i in vec!["/qstar@bot text", "/qstar text", "/qstar@s_oMe_bot text"] {
+            let data = tf.transform(i).unwrap();
+            assert_text_qstar(&data);
+        }
+    }
+
+    #[test]
+    fn it_not_works() {
+        let tf = Transformer::new();
+        for i in vec![
+            "",
+            "/square",
+            "/star ",
+            "/qstar x",
+            "/square xx",
+            &format!("/star {}", String::from_utf8(vec![b'X'; 501]).unwrap()),
+        ] {
+            assert_eq!(tf.transform(&i).is_none(), true);
+        }
+    }
 }
