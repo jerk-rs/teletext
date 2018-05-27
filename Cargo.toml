@@ -1,6 +1,6 @@
 [package]
 name = "teletext"
-version = "0.1.2"
+version = "0.1.3"
 authors = ["Ross Nomann <rossnomann@protonmail.com>"]
 
 [dependencies]
