@@ -4,9 +4,10 @@ A telegram bot to transform text
 
 # Available commands:
 
- - `/square`
- - `/star`
- - `/qstar`
+- `/square`
+- `/star`
+- `/sw`
+- `/qstar`
 
 # Running
 
