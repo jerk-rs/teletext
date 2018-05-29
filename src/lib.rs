@@ -159,7 +159,6 @@ fn to_qstar(s: &str) -> String {
     output
 }
 
-#[allow(dead_code)]
 fn to_sw(s: &str) -> String {
     let chars = collect_chars(s);
     let len = chars.len();
