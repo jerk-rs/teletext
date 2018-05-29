@@ -2,6 +2,8 @@
 
 A telegram bot to transform text
 
+[![Travis](https://img.shields.io/travis/jerk-rs/teletext.svg?style=flat-square)](https://travis-ci.org/jerk-rs/teletext)
+
 # Available commands:
 
 - `/square`
