@@ -1,42 +1,115 @@
-extern crate regex;
+#![feature(try_from)]
+use std::convert::TryFrom;
 
-use regex::Regex;
+use std::fmt;
 
-pub struct Transformer {
-    cmd_pattern: Regex,
+fn is_valid(text: &str) -> bool {
+    text.len() >= 3 && text.len() <= 500
 }
 
-impl Transformer {
-    pub fn new() -> Transformer {
-        Transformer {
-            cmd_pattern: Regex::new(r"([A-z_]+)(@[A-z_]+)?(.*)").unwrap(),
-        }
-    }
+pub struct Square {
+    pub raw: String,
+}
 
-    pub fn transform(&self, data: &str) -> Option<String> {
-        if let Some(caps) = self.cmd_pattern.captures(data) {
-            match (caps.get(1), caps.get(3)) {
-                (Some(cmd), Some(text)) => {
-                    let text = text.as_str().trim();
-                    let text_size = text.len();
-                    if text_size < 3 || text_size > 500 {
-                        return None;
-                    }
-                    Some(match cmd.as_str() {
-                        "square" => to_square(text),
-                        "star" => to_star(text),
-                        "sw" => to_sw(text),
-                        "qstar" => to_qstar(text),
-                        _ => return None,
-                    })
-                }
-                _ => None,
-            }
+impl<'a> TryFrom<&'a str> for Square {
+    type Error = ();
+
+    fn try_from(text: &'a str) -> Result<Square, Self::Error> {
+        let trimmed = text.trim();
+        if is_valid(trimmed) {
+            Ok(Square{
+                raw: to_square(trimmed),
+            })
         } else {
-            None
+            Err(())
         }
     }
 }
+
+impl fmt::Display for Square {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.raw)
+    }
+}
+
+pub struct Star {
+    pub raw: String,
+}
+
+impl<'a> TryFrom<&'a str> for Star {
+    type Error = ();
+
+    fn try_from(text: &'a str) -> Result<Star, Self::Error> {
+        let trimmed = text.trim();
+        if is_valid(trimmed) {
+            Ok(Star{
+                raw: to_star(trimmed),
+            })
+        } else {
+            Err(())
+        }
+    }
+}
+
+impl fmt::Display for Star {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.raw)
+    }
+}
+
+pub struct Qstar {
+    pub raw: String,
+}
+
+impl<'a> TryFrom<&'a str> for Qstar {
+    type Error = ();
+
+    fn try_from(text: &'a str) -> Result<Qstar, Self::Error> {
+        let trimmed = text.trim();
+        if is_valid(trimmed) {
+            Ok(Qstar{
+                raw: to_qstar(trimmed),
+            })
+        } else {
+            Err(())
+        }
+    }
+}
+
+impl fmt::Display for Qstar {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.raw)
+    }
+}
+
+
+pub struct Sw {
+    pub raw: String,
+}
+
+impl<'a> TryFrom<&'a str> for Sw {
+    type Error = ();
+
+    fn try_from(text: &'a str) -> Result<Sw, Self::Error> {
+        let trimmed = text.trim();
+        if is_valid(trimmed) {
+            Ok(Sw{
+                raw: to_sw(trimmed),
+            })
+        } else {
+            Err(())
+        }
+    }
+}
+
+impl fmt::Display for Sw {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.raw)
+    }
+}
+
+
+
 
 fn collect_chars(s: &str) -> Vec<char> {
     s.chars().flat_map(|c| c.to_uppercase()).collect()
@@ -263,42 +336,47 @@ mod tests {
     }
 
     #[test]
-    fn it_works() {
-        let tf = Transformer::new();
-
-        for i in vec!["/square@bot text", "/square text", "/square@s_oMe_bot text"] {
-            let data = tf.transform(i).unwrap();
-            assert_text_square(&data);
-        }
-
-        for i in vec!["/star@bot text", "/star text", "/star@s_oMe_bot text"] {
-            let data = tf.transform(i).unwrap();
-            assert_text_star(&data);
-        }
-
-        for i in vec!["/qstar@bot text", "/qstar text", "/qstar@s_oMe_bot text"] {
-            let data = tf.transform(i).unwrap();
-            assert_text_qstar(&data);
-        }
-
-        for i in vec!["/sw@bot rurust", "/sw rurust", "/sw@s_oMe_bot rurust"] {
-            let data = tf.transform(i).unwrap();
-            assert_text_sw(&data);
-        }
+    fn transform_square() {
+        let i = "text";
+        let data = to_square(i);
+        assert_text_square(&data);
     }
 
     #[test]
-    fn it_not_works() {
-        let tf = Transformer::new();
-        for i in vec![
-            "",
-            "/square",
-            "/star ",
-            "/qstar x",
-            "/square xx",
-            &format!("/star {}", String::from_utf8(vec![b'X'; 501]).unwrap()),
-        ] {
-            assert_eq!(tf.transform(&i).is_none(), true);
-        }
+    fn transform_star() {
+        let i = "text";
+        let data = to_star(i);
+        assert_text_star(&data);
     }
+
+    #[test]
+    fn transform_qstar() {
+        let i = "text";
+        let data = to_qstar(i);
+        assert_text_qstar(&data);
+    }
+
+    #[test]
+    fn transform_sw() {
+        let i = "rurust";
+        let data = to_sw(i);
+        assert_text_sw(&data);
+    }
+
+    // FIXME: Convert this test to validate `TBot::process_message()`
+
+    // #[test]
+    // fn it_not_works() {
+    //     let tf = Transformer::new();
+    //     for i in vec![
+    //         "",
+    //         "/square",
+    //         "/star ",
+    //         "/qstar x",
+    //         "/square xx",
+    //         &format!("/star {}", String::from_utf8(vec![b'X'; 501]).unwrap()),
+    //     ] {
+    //         assert_eq!(tf.transform(&i).is_none(), true);
+    //     }
+    // }
 }
