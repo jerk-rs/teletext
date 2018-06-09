@@ -15,6 +15,7 @@ A telegram bot to transform text
 
 ```sh
 $ git clone https://github.com/rossnomann/teletext && cd teletext
+$ rustup override set nightly
 $ cargo build --release
 $ # or download from releases page on github
 $ cat <<EOF > .env
