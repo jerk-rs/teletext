@@ -15,10 +15,9 @@ impl<'a> TryFrom<&'a str> for Square {
     type Error = ();
 
     fn try_from(text: &'a str) -> Result<Square, Self::Error> {
-        let trimmed = text.trim();
-        if is_valid(trimmed) {
+        if is_valid(text) {
             Ok(Square {
-                buf: to_square(trimmed),
+                buf: to_square(text),
             })
         } else {
             Err(())
@@ -40,10 +39,9 @@ impl<'a> TryFrom<&'a str> for Star {
     type Error = ();
 
     fn try_from(text: &'a str) -> Result<Star, Self::Error> {
-        let trimmed = text.trim();
-        if is_valid(trimmed) {
+        if is_valid(text) {
             Ok(Star {
-                buf: to_star(trimmed),
+                buf: to_star(text),
             })
         } else {
             Err(())
@@ -65,10 +63,9 @@ impl<'a> TryFrom<&'a str> for Arrow {
     type Error = ();
 
     fn try_from(text: &'a str) -> Result<Arrow, Self::Error> {
-        let trimmed = text.trim();
-        if is_valid(trimmed) {
+        if is_valid(text) {
             Ok(Arrow {
-                buf: to_arrow(trimmed),
+                buf: to_arrow(text),
             })
         } else {
             Err(())
@@ -90,10 +87,9 @@ impl<'a> TryFrom<&'a str> for Sw {
     type Error = ();
 
     fn try_from(text: &'a str) -> Result<Sw, Self::Error> {
-        let trimmed = text.trim();
-        if is_valid(trimmed) {
+        if is_valid(text) {
             Ok(Sw {
-                buf: to_sw(trimmed),
+                buf: to_sw(text),
             })
         } else {
             Err(())
