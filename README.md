@@ -6,10 +6,10 @@ A telegram bot to transform text
 
 # Available commands:
 
+- `/arrow`
 - `/square`
 - `/star`
 - `/sw`
-- `/qstar`
 
 # Running
 
