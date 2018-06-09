@@ -11,8 +11,8 @@ use futures::Stream;
 use std::env;
 use telegram_bot::prelude::*;
 use telegram_bot::{Api, ParseMode, UpdateKind};
-use telegram_bot::{MessageKind, MessageEntityKind};
-use teletext::{Square, Star, Qstar, Sw};
+use telegram_bot::{MessageEntityKind, MessageKind};
+use teletext::{Qstar, Square, Star, Sw};
 use tokio_core::reactor::Core;
 
 use std::convert::TryInto;
@@ -25,22 +25,46 @@ fn main() {
     let future = api.stream().for_each(|update| {
         if let UpdateKind::Message(message) = update.kind {
             let mut result = Err(());
-            if let MessageKind::Text { ref data, ref entities } = message.kind {
+            if let MessageKind::Text {
+                ref data,
+                ref entities,
+            } = message.kind
+            {
                 if let Some(first) = entities.first() {
                     // Check if the first token is MessageEntityKind::BotCommand,
                     // Offset is probably 0 because telegram trims the leading spaces
                     if first.kind != MessageEntityKind::BotCommand || first.offset != 0 {
-                        return Ok(())
+                        return Ok(());
                     }
 
                     let (cmd, text) = data.split_at(first.length as usize);
 
                     result = match cmd {
-                        "/square" => Ok(format!("{}", text.try_into().unwrap_or(Square{ buf: "goforkurself".into() }))),
-                        "/star" => Ok(format!("{}", text.try_into().unwrap_or(Star{ buf: "goforkurself".into() }))),
-                        "/qstar" => Ok(format!("{}", text.try_into().unwrap_or(Qstar{ buf: "goforkurself".into() }))),
-                        "/sw" => Ok(format!("{}", text.try_into().unwrap_or(Sw{ buf: "goforkurself".into() }))),
-                        _ => Err(())
+                        "/square" => Ok(format!(
+                            "{}",
+                            text.try_into().unwrap_or(Square {
+                                buf: "goforkurself".into()
+                            })
+                        )),
+                        "/star" => Ok(format!(
+                            "{}",
+                            text.try_into().unwrap_or(Star {
+                                buf: "goforkurself".into()
+                            })
+                        )),
+                        "/qstar" => Ok(format!(
+                            "{}",
+                            text.try_into().unwrap_or(Qstar {
+                                buf: "goforkurself".into()
+                            })
+                        )),
+                        "/sw" => Ok(format!(
+                            "{}",
+                            text.try_into().unwrap_or(Sw {
+                                buf: "goforkurself".into()
+                            })
+                        )),
+                        _ => Err(()),
                     };
                 };
             };

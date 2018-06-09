@@ -17,7 +17,7 @@ impl<'a> TryFrom<&'a str> for Square {
     fn try_from(text: &'a str) -> Result<Square, Self::Error> {
         let trimmed = text.trim();
         if is_valid(trimmed) {
-            Ok(Square{
+            Ok(Square {
                 buf: to_square(trimmed),
             })
         } else {
@@ -42,7 +42,7 @@ impl<'a> TryFrom<&'a str> for Star {
     fn try_from(text: &'a str) -> Result<Star, Self::Error> {
         let trimmed = text.trim();
         if is_valid(trimmed) {
-            Ok(Star{
+            Ok(Star {
                 buf: to_star(trimmed),
             })
         } else {
@@ -67,7 +67,7 @@ impl<'a> TryFrom<&'a str> for Qstar {
     fn try_from(text: &'a str) -> Result<Qstar, Self::Error> {
         let trimmed = text.trim();
         if is_valid(trimmed) {
-            Ok(Qstar{
+            Ok(Qstar {
                 buf: to_qstar(trimmed),
             })
         } else {
@@ -82,7 +82,6 @@ impl fmt::Display for Qstar {
     }
 }
 
-
 pub struct Sw {
     pub buf: String,
 }
@@ -93,7 +92,7 @@ impl<'a> TryFrom<&'a str> for Sw {
     fn try_from(text: &'a str) -> Result<Sw, Self::Error> {
         let trimmed = text.trim();
         if is_valid(trimmed) {
-            Ok(Sw{
+            Ok(Sw {
                 buf: to_sw(trimmed),
             })
         } else {
@@ -107,9 +106,6 @@ impl fmt::Display for Sw {
         write!(f, "{}", self.buf)
     }
 }
-
-
-
 
 fn collect_chars(s: &str) -> Vec<char> {
     s.chars().flat_map(|c| c.to_uppercase()).collect()
@@ -362,21 +358,4 @@ mod tests {
         let data = to_sw(i);
         assert_text_sw(&data);
     }
-
-    // FIXME: Convert this test to validate `TBot::process_message()`
-
-    // #[test]
-    // fn it_not_works() {
-    //     let tf = Transformer::new();
-    //     for i in vec![
-    //         "",
-    //         "/square",
-    //         "/star ",
-    //         "/qstar x",
-    //         "/square xx",
-    //         &format!("/star {}", String::from_utf8(vec![b'X'; 501]).unwrap()),
-    //     ] {
-    //         assert_eq!(tf.transform(&i).is_none(), true);
-    //     }
-    // }
 }
