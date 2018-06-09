@@ -36,10 +36,10 @@ fn main() {
                     let (cmd, text) = data.split_at(first.length as usize);
 
                     result = match cmd {
-                        "/square" => Ok(format!("{}", text.try_into().unwrap_or(Square{ raw: "goforkurself".into() }))),
-                        "/star" => Ok(format!("{}", text.try_into().unwrap_or(Star{ raw: "goforkurself".into() }))),
-                        "/qstar" => Ok(format!("{}", text.try_into().unwrap_or(Qstar{ raw: "goforkurself".into() }))),
-                        "/sw" => Ok(format!("{}", text.try_into().unwrap_or(Sw{ raw: "goforkurself".into() }))),
+                        "/square" => Ok(format!("{}", text.try_into().unwrap_or(Square{ buf: "goforkurself".into() }))),
+                        "/star" => Ok(format!("{}", text.try_into().unwrap_or(Star{ buf: "goforkurself".into() }))),
+                        "/qstar" => Ok(format!("{}", text.try_into().unwrap_or(Qstar{ buf: "goforkurself".into() }))),
+                        "/sw" => Ok(format!("{}", text.try_into().unwrap_or(Sw{ buf: "goforkurself".into() }))),
                         _ => Err(())
                     };
                 };

@@ -8,7 +8,7 @@ fn is_valid(text: &str) -> bool {
 }
 
 pub struct Square {
-    pub raw: String,
+    pub buf: String,
 }
 
 impl<'a> TryFrom<&'a str> for Square {
@@ -18,7 +18,7 @@ impl<'a> TryFrom<&'a str> for Square {
         let trimmed = text.trim();
         if is_valid(trimmed) {
             Ok(Square{
-                raw: to_square(trimmed),
+                buf: to_square(trimmed),
             })
         } else {
             Err(())
@@ -28,12 +28,12 @@ impl<'a> TryFrom<&'a str> for Square {
 
 impl fmt::Display for Square {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.raw)
+        write!(f, "{}", self.buf)
     }
 }
 
 pub struct Star {
-    pub raw: String,
+    pub buf: String,
 }
 
 impl<'a> TryFrom<&'a str> for Star {
@@ -43,7 +43,7 @@ impl<'a> TryFrom<&'a str> for Star {
         let trimmed = text.trim();
         if is_valid(trimmed) {
             Ok(Star{
-                raw: to_star(trimmed),
+                buf: to_star(trimmed),
             })
         } else {
             Err(())
@@ -53,12 +53,12 @@ impl<'a> TryFrom<&'a str> for Star {
 
 impl fmt::Display for Star {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.raw)
+        write!(f, "{}", self.buf)
     }
 }
 
 pub struct Qstar {
-    pub raw: String,
+    pub buf: String,
 }
 
 impl<'a> TryFrom<&'a str> for Qstar {
@@ -68,7 +68,7 @@ impl<'a> TryFrom<&'a str> for Qstar {
         let trimmed = text.trim();
         if is_valid(trimmed) {
             Ok(Qstar{
-                raw: to_qstar(trimmed),
+                buf: to_qstar(trimmed),
             })
         } else {
             Err(())
@@ -78,13 +78,13 @@ impl<'a> TryFrom<&'a str> for Qstar {
 
 impl fmt::Display for Qstar {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.raw)
+        write!(f, "{}", self.buf)
     }
 }
 
 
 pub struct Sw {
-    pub raw: String,
+    pub buf: String,
 }
 
 impl<'a> TryFrom<&'a str> for Sw {
@@ -94,7 +94,7 @@ impl<'a> TryFrom<&'a str> for Sw {
         let trimmed = text.trim();
         if is_valid(trimmed) {
             Ok(Sw{
-                raw: to_sw(trimmed),
+                buf: to_sw(trimmed),
             })
         } else {
             Err(())
@@ -104,7 +104,7 @@ impl<'a> TryFrom<&'a str> for Sw {
 
 impl fmt::Display for Sw {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.raw)
+        write!(f, "{}", self.buf)
     }
 }
 
