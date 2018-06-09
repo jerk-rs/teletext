@@ -57,18 +57,18 @@ impl fmt::Display for Star {
     }
 }
 
-pub struct Qstar {
+pub struct Arrow {
     pub buf: String,
 }
 
-impl<'a> TryFrom<&'a str> for Qstar {
+impl<'a> TryFrom<&'a str> for Arrow {
     type Error = ();
 
-    fn try_from(text: &'a str) -> Result<Qstar, Self::Error> {
+    fn try_from(text: &'a str) -> Result<Arrow, Self::Error> {
         let trimmed = text.trim();
         if is_valid(trimmed) {
-            Ok(Qstar {
-                buf: to_qstar(trimmed),
+            Ok(Arrow {
+                buf: to_arrow(trimmed),
             })
         } else {
             Err(())
@@ -76,7 +76,7 @@ impl<'a> TryFrom<&'a str> for Qstar {
     }
 }
 
-impl fmt::Display for Qstar {
+impl fmt::Display for Arrow {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.buf)
     }
@@ -199,7 +199,7 @@ fn to_star(s: &str) -> String {
     output
 }
 
-fn to_qstar(s: &str) -> String {
+fn to_arrow(s: &str) -> String {
     let chars = collect_chars(s);
     let len = chars.len();
     let mut output = String::with_capacity(sqr(len * 2));
@@ -308,7 +308,7 @@ mod tests {
         assert_eq!(lines.next(), Some("T     T     T"));
     }
 
-    fn assert_text_qstar(text: &str) {
+    fn assert_text_arrow(text: &str) {
         let mut lines = text.lines();
         assert_eq!(lines.next(), Some("T E X T"));
         assert_eq!(lines.next(), Some("E E"));
@@ -346,10 +346,10 @@ mod tests {
     }
 
     #[test]
-    fn transform_qstar() {
+    fn transform_arrow() {
         let i = "text";
-        let data = to_qstar(i);
-        assert_text_qstar(&data);
+        let data = to_arrow(i);
+        assert_text_arrow(&data);
     }
 
     #[test]

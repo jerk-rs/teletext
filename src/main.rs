@@ -12,7 +12,7 @@ use std::env;
 use telegram_bot::prelude::*;
 use telegram_bot::{Api, ParseMode, UpdateKind};
 use telegram_bot::{MessageEntityKind, MessageKind};
-use teletext::{Qstar, Square, Star, Sw};
+use teletext::{Arrow, Square, Star, Sw};
 use tokio_core::reactor::Core;
 
 use std::convert::TryInto;
@@ -40,6 +40,12 @@ fn main() {
                     let (cmd, text) = data.split_at(first.length as usize);
 
                     result = match cmd {
+                        "/arrow" => Ok(format!(
+                            "{}",
+                            text.try_into().unwrap_or(Arrow {
+                                buf: "goforkurself".into()
+                            })
+                        )),
                         "/square" => Ok(format!(
                             "{}",
                             text.try_into().unwrap_or(Square {
@@ -49,12 +55,6 @@ fn main() {
                         "/star" => Ok(format!(
                             "{}",
                             text.try_into().unwrap_or(Star {
-                                buf: "goforkurself".into()
-                            })
-                        )),
-                        "/qstar" => Ok(format!(
-                            "{}",
-                            text.try_into().unwrap_or(Qstar {
                                 buf: "goforkurself".into()
                             })
                         )),
