@@ -1,4 +1,5 @@
 use futures::prelude::*;
+use futures_retry::{RetryPolicy, StreamRetryExt};
 use std::{error::Error, fmt, io::Error as IoError};
 use telegram_bot::prelude::*;
 use telegram_bot::{Api, Error as TelegramError, Message, MessageEntity, MessageEntityKind,
@@ -81,7 +82,7 @@ impl fmt::Display for AppError {
 #[async]
 fn handle_updates(api: Api) -> Result<(), TelegramError> {
     #[async]
-    for update in api.stream() {
+    for update in api.stream().retry(handle_update_error) {
         if let UpdateKind::Message(message) = update.kind {
             match handle_command(&message) {
                 Ok(None) => { /* noop */ }
@@ -105,6 +106,11 @@ fn handle_updates(api: Api) -> Result<(), TelegramError> {
         }
     }
     Ok(())
+}
+
+fn handle_update_error(error: TelegramError) -> RetryPolicy<TelegramError> {
+    println!("An error has occurred while getting update: {:?}", error);
+    RetryPolicy::Repeat
 }
 
 fn handle_command(message: &Message) -> Result<Option<String>, AppError> {
