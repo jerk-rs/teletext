@@ -1,9 +1,12 @@
+use futures::prelude::await;
 use futures::prelude::*;
 use futures_retry::{RetryPolicy, StreamRetryExt};
 use std::{error::Error, fmt, io::Error as IoError};
 use telegram_bot::prelude::*;
-use telegram_bot::{Api, Error as TelegramError, Message, MessageEntity, MessageEntityKind,
-                   MessageKind, ParseMode, UpdateKind};
+use telegram_bot::{
+    Api, Error as TelegramError, Message, MessageEntity, MessageEntityKind, MessageKind, ParseMode,
+    UpdateKind,
+};
 use tokio_core::reactor::Core;
 use transform::*;
 
