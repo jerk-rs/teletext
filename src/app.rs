@@ -1,11 +1,12 @@
 use futures::prelude::await;
 use futures::prelude::*;
 use futures_retry::{RetryPolicy, StreamRetryExt};
+use huify::huify_sentence;
 use std::{error::Error, fmt, io::Error as IoError};
 use telegram_bot::prelude::*;
 use telegram_bot::{
-    Api, Error as TelegramError, Message, MessageEntity, MessageEntityKind, MessageKind, ParseMode,
-    UpdateKind,
+    Api, Error as TelegramError, Message, MessageEntity, MessageEntityKind, MessageKind,
+    MessageOrChannelPost, ParseMode, UpdateKind,
 };
 use tokio_core::reactor::Core;
 use transform::*;
@@ -42,6 +43,12 @@ impl AppError {
     fn unknown_command(cmd: &str) -> AppError {
         AppError {
             description: format!("Unknown command: {}", cmd),
+        }
+    }
+
+    fn nothing_to_huify() -> AppError {
+        AppError {
+            description: String::from("Nothing to huify"),
         }
     }
 }
@@ -90,9 +97,13 @@ fn handle_updates(api: Api) -> Result<(), TelegramError> {
             match handle_command(&message) {
                 Ok(None) => { /* noop */ }
                 Ok(Some(reply)) => {
+                    let reply_to = match message.reply_to_message {
+                        Some(box MessageOrChannelPost::Message(reply_to)) => reply_to,
+                        _ => message,
+                    };
                     if let Err(err) = await!(
                         api.send(
-                            message
+                            reply_to
                                 .text_reply(format!("```\n{}\n```", reply))
                                 .parse_mode(ParseMode::Markdown),
                         )
@@ -133,6 +144,21 @@ fn handle_command(message: &Message) -> Result<Option<String>, AppError> {
             if let Some(cmd) = cmd {
                 let text = text.trim();
                 return Ok(Some(match cmd {
+                    "/huify" => {
+                        if let Some(box MessageOrChannelPost::Message(Message {
+                            kind: MessageKind::Text { ref data, .. },
+                            ..
+                        })) = message.reply_to_message
+                        {
+                            huify_sentence(data)
+                        } else {
+                            if text.len() > 0 {
+                                huify_sentence(text)
+                            } else {
+                                return Err(AppError::nothing_to_huify());
+                            }
+                        }
+                    }
                     "/arrow" => text.to_arrow()?,
                     "/square" => text.to_square()?,
                     "/star" => text.to_star()?,
