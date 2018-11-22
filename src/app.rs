@@ -97,17 +97,17 @@ fn handle_updates(api: Api) -> Result<(), TelegramError> {
             match handle_command(&message) {
                 Ok(None) => { /* noop */ }
                 Ok(Some(reply)) => {
-                    let reply_to = match message.reply_to_message {
-                        Some(box MessageOrChannelPost::Message(reply_to)) => reply_to,
-                        _ => message,
+                    let reply = reply.to_string();
+                    let mut out = match message.reply_to_message {
+                        Some(box MessageOrChannelPost::Message(ref reply_to)) => {
+                            reply_to.text_reply(reply)
+                        }
+                        Some(box MessageOrChannelPost::ChannelPost(ref reply_to)) => {
+                            reply_to.text_reply(reply)
+                        }
+                        _ => message.text_reply(reply),
                     };
-                    if let Err(err) = await!(
-                        api.send(
-                            reply_to
-                                .text_reply(format!("```\n{}\n```", reply))
-                                .parse_mode(ParseMode::Markdown),
-                        )
-                    ) {
+                    if let Err(err) = await!(api.send(out.parse_mode(ParseMode::Markdown))) {
                         println!("Failed to send message: {}", err);
                     }
                 }
@@ -127,7 +127,7 @@ fn handle_update_error(error: TelegramError) -> RetryPolicy<TelegramError> {
     RetryPolicy::Repeat
 }
 
-fn handle_command(message: &Message) -> Result<Option<String>, AppError> {
+fn handle_command(message: &Message) -> Result<Option<CommandResult>, AppError> {
     if let MessageKind::Text {
         ref data,
         ref entities,
@@ -150,23 +150,44 @@ fn handle_command(message: &Message) -> Result<Option<String>, AppError> {
                             ..
                         })) = message.reply_to_message
                         {
-                            huify_sentence(data)
+                            CommandResult::new(huify_sentence(data), false)
                         } else {
                             if text.len() > 0 {
-                                huify_sentence(text)
+                                CommandResult::new(huify_sentence(text), false)
                             } else {
                                 return Err(AppError::nothing_to_huify());
                             }
                         }
                     }
-                    "/arrow" => text.to_arrow()?,
-                    "/square" => text.to_square()?,
-                    "/star" => text.to_star()?,
-                    "/sw" => text.to_sw()?,
+                    "/arrow" => CommandResult::new(text.to_arrow()?, true),
+                    "/square" => CommandResult::new(text.to_square()?, true),
+                    "/star" => CommandResult::new(text.to_star()?, true),
+                    "/sw" => CommandResult::new(text.to_sw()?, true),
                     _ => return Err(AppError::unknown_command(cmd)),
                 }));
             }
         }
     }
     Ok(None)
+}
+
+struct CommandResult {
+    data: String,
+    is_monospace: bool,
+}
+
+impl CommandResult {
+    fn new(data: String, is_monospace: bool) -> CommandResult {
+        CommandResult { data, is_monospace }
+    }
+}
+
+impl fmt::Display for CommandResult {
+    fn fmt(&self, out: &mut fmt::Formatter) -> fmt::Result {
+        if self.is_monospace {
+            write!(out, "```{}```", self.data)
+        } else {
+            write!(out, "{}", self.data)
+        }
+    }
 }
