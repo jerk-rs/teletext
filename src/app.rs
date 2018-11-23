@@ -1,174 +1,103 @@
-use futures::prelude::await;
-use futures::prelude::*;
-use futures_retry::{RetryPolicy, StreamRetryExt};
 use huify::huify_sentence;
-use std::{error::Error, fmt, io::Error as IoError};
-use telegram_bot::prelude::*;
-use telegram_bot::{
-    Api, Error as TelegramError, Message, MessageEntity, MessageEntityKind, MessageKind,
-    MessageOrChannelPost, ParseMode, UpdateKind,
-};
-use tokio_core::reactor::Core;
+use std::fmt;
+use teleborg::objects::{Chat, Message, Update};
+use teleborg::{Bot, Dispatcher, ParseMode, Updater};
 use transform::*;
 
-pub type AppResult<T> = Result<T, AppError>;
-
-pub struct App {
-    api: Api,
-    core: Core,
+pub fn run<S: Into<String>>(token: S) {
+    let mut dispatcher = Dispatcher::new();
+    dispatcher.add_command_handler("arrow", handle_arrow, true);
+    dispatcher.add_command_handler("huify", handle_huify, true);
+    dispatcher.add_command_handler("square", handle_square, true);
+    dispatcher.add_command_handler("star", handle_star, true);
+    dispatcher.add_command_handler("sw", handle_sw, true);
+    Updater::start(Some(token.into()), None, None, None, dispatcher);
 }
 
-impl App {
-    pub fn new(token: &str) -> AppResult<App> {
-        let core = Core::new()?;
-        let api = Api::configure(token).build(core.handle())?;
-        Ok(App {
-            api: api,
-            core: core,
-        })
-    }
-
-    pub fn run(mut self) -> AppResult<()> {
-        self.core.run(handle_updates(self.api))?;
-        Ok(())
-    }
-}
-
-#[derive(Debug)]
-pub struct AppError {
-    description: String,
-}
-
-impl AppError {
-    fn unknown_command(cmd: &str) -> AppError {
-        AppError {
-            description: format!("Unknown command: {}", cmd),
-        }
-    }
-
-    fn nothing_to_huify() -> AppError {
-        AppError {
-            description: String::from("Nothing to huify"),
-        }
-    }
-}
-
-impl From<IoError> for AppError {
-    fn from(err: IoError) -> AppError {
-        AppError {
-            description: err.to_string(),
-        }
-    }
-}
-
-impl From<TelegramError> for AppError {
-    fn from(err: TelegramError) -> AppError {
-        AppError {
-            description: err.to_string(),
-        }
-    }
-}
-
-impl From<TransformError> for AppError {
-    fn from(err: TransformError) -> AppError {
-        AppError {
-            description: err.to_string(),
-        }
-    }
-}
-
-impl Error for AppError {
-    fn description(&self) -> &str {
-        &self.description
-    }
-}
-
-impl fmt::Display for AppError {
-    fn fmt(&self, out: &mut fmt::Formatter) -> fmt::Result {
-        write!(out, "{}", self.description)
-    }
-}
-
-#[async]
-fn handle_updates(api: Api) -> Result<(), TelegramError> {
-    #[async]
-    for update in api.stream().retry(handle_update_error) {
-        if let UpdateKind::Message(message) = update.kind {
-            match handle_command(&message) {
-                Ok(None) => { /* noop */ }
-                Ok(Some(reply)) => {
-                    let reply = reply.to_string();
-                    let mut out = match message.reply_to_message {
-                        Some(box MessageOrChannelPost::Message(ref reply_to)) => {
-                            reply_to.text_reply(reply)
-                        }
-                        Some(box MessageOrChannelPost::ChannelPost(ref reply_to)) => {
-                            reply_to.text_reply(reply)
-                        }
-                        _ => message.text_reply(reply),
-                    };
-                    if let Err(err) = await!(api.send(out.parse_mode(ParseMode::Markdown))) {
-                        println!("Failed to send message: {}", err);
-                    }
-                }
-                Err(err) => {
-                    if let Err(err) = await!(api.send(message.text_reply(err.to_string()))) {
-                        println!("Failed to send message: {}", err);
-                    }
+macro_rules! handle_figure {
+    ($name:ident, $transform:ident) => {
+        fn $name(bot: &Bot, update: Update, args: Option<Vec<&str>>) {
+            if let Some(Message {
+                message_id,
+                chat: Chat { id: chat_id, .. },
+                reply_to_message,
+                ..
+            }) = update.message
+            {
+                let result = match args {
+                    Some(args) => match args.join(" ").trim().$transform() {
+                        Ok(result) => CommandResult::new(result, true),
+                        Err(err) => CommandResult::new(err.to_string(), false),
+                    },
+                    None => CommandResult::new("You should provide some text", false),
+                };
+                let reply_to_id = match reply_to_message {
+                    Some(r) => r.message_id,
+                    None => message_id,
+                };
+                if let Err(err) = bot.send_message(
+                    &chat_id,
+                    &result.to_string(),
+                    Some(&ParseMode::Markdown),
+                    None,
+                    None,
+                    Some(&reply_to_id),
+                    None,
+                ) {
+                    println!("Failed to send a message: {:?}", err);
                 }
             }
         }
-    }
-    Ok(())
+    };
 }
 
-fn handle_update_error(error: TelegramError) -> RetryPolicy<TelegramError> {
-    println!("An error has occurred while getting update: {:?}", error);
-    RetryPolicy::Repeat
-}
+handle_figure!(handle_arrow, to_arrow);
+handle_figure!(handle_square, to_square);
+handle_figure!(handle_star, to_star);
+handle_figure!(handle_sw, to_sw);
 
-fn handle_command(message: &Message) -> Result<Option<CommandResult>, AppError> {
-    if let MessageKind::Text {
-        ref data,
-        ref entities,
-    } = message.kind
+fn handle_huify(bot: &Bot, update: Update, args: Option<Vec<&str>>) {
+    let args: Option<String> = args
+        .and_then(|x| if x.len() != 0 { Some(x) } else { None })
+        .map(|x| x.join(" "));
+    if let Some(Message {
+        message_id,
+        chat: Chat { id: chat_id, .. },
+        reply_to_message,
+        ..
+    }) = update.message
     {
-        if let Some(MessageEntity {
-            kind: MessageEntityKind::BotCommand,
-            offset: 0,
-            length,
-        }) = entities.first()
+        let (message_id, input) = if let Some(box Message {
+            message_id,
+            text: Some(text),
+            ..
+        }) = reply_to_message
         {
-            let (cmd, text) = data.split_at(*length as usize);
-            let cmd = cmd.split('@').next();
-            if let Some(cmd) = cmd {
-                let text = text.trim();
-                return Ok(Some(match cmd {
-                    "/huify" => {
-                        if let Some(box MessageOrChannelPost::Message(Message {
-                            kind: MessageKind::Text { ref data, .. },
-                            ..
-                        })) = message.reply_to_message
-                        {
-                            CommandResult::new(huify_sentence(data), false)
-                        } else {
-                            if text.len() > 0 {
-                                CommandResult::new(huify_sentence(text), false)
-                            } else {
-                                return Err(AppError::nothing_to_huify());
-                            }
-                        }
-                    }
-                    "/arrow" => CommandResult::new(text.to_arrow()?, true),
-                    "/square" => CommandResult::new(text.to_square()?, true),
-                    "/star" => CommandResult::new(text.to_star()?, true),
-                    "/sw" => CommandResult::new(text.to_sw()?, true),
-                    _ => return Err(AppError::unknown_command(cmd)),
-                }));
-            }
+            let input = match args {
+                Some(args) => args,
+                None => text,
+            };
+            (message_id, input)
+        } else {
+            let input = match args {
+                Some(args) => args,
+                None => String::from("Nothing to huify"),
+            };
+            (message_id, input)
+        };
+        let output = huify_sentence(&input);
+        if let Err(err) = bot.send_message(
+            &chat_id,
+            &output,
+            Some(&ParseMode::Markdown),
+            None,
+            None,
+            Some(&message_id),
+            None,
+        ) {
+            println!("Failed to send a message: {:?}", err);
         }
     }
-    Ok(None)
 }
 
 struct CommandResult {
@@ -177,15 +106,18 @@ struct CommandResult {
 }
 
 impl CommandResult {
-    fn new(data: String, is_monospace: bool) -> CommandResult {
-        CommandResult { data, is_monospace }
+    fn new<S: Into<String>>(data: S, is_monospace: bool) -> CommandResult {
+        CommandResult {
+            data: data.into(),
+            is_monospace,
+        }
     }
 }
 
 impl fmt::Display for CommandResult {
     fn fmt(&self, out: &mut fmt::Formatter) -> fmt::Result {
         if self.is_monospace {
-            write!(out, "```{}```", self.data)
+            write!(out, "```\n{}\n```", self.data)
         } else {
             write!(out, "{}", self.data)
         }
