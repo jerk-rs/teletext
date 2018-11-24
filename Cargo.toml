@@ -5,5 +5,4 @@ authors = ["Ross Nomann <rossnomann@protonmail.com>"]
 
 [dependencies]
 dotenv = "0.12"
-regex = "1.0"
 teleborg = "0.1"
