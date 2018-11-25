@@ -5,7 +5,6 @@ extern crate teleborg;
 extern crate failure;
 
 mod app;
-mod huify;
 mod transform;
 
 pub use self::app::run;
