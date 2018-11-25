@@ -1,3 +1,6 @@
+mod command;
+
+pub use self::command::TransformCommand;
 use std::{error::Error, fmt};
 
 type Bounds = (usize, usize);
