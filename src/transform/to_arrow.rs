@@ -1,14 +1,14 @@
-use super::{collect_chars, Bounds, TransformError, TransformResult};
+use super::{collect_chars, Bounds, Error, Result};
 
 const ARROW_BOUNDS: Bounds = (3, 100);
 
-pub fn to_arrow(orig: &str) -> TransformResult<String> {
+pub fn to_arrow(orig: &str) -> Result<String> {
     let len = orig.len();
     if len < ARROW_BOUNDS.0 || len > ARROW_BOUNDS.1 {
-        return Err(TransformError::invalid_length(
-            ARROW_BOUNDS.0,
-            ARROW_BOUNDS.1,
-        ));
+        return Err(Error::InvalidLength {
+            min: ARROW_BOUNDS.0,
+            max: ARROW_BOUNDS.1,
+        });
     }
 
     let chars = collect_chars(&orig);

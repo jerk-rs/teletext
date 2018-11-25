@@ -1,14 +1,14 @@
-use super::{collect_chars, Bounds, TransformError, TransformResult};
+use super::{collect_chars, Bounds, Error, Result};
 
 const SQUARE_BOUNDS: Bounds = (2, 100);
 
-pub fn to_square(origin: &str) -> TransformResult<String> {
+pub fn to_square(origin: &str) -> Result<String> {
     let len = origin.len();
     if len < SQUARE_BOUNDS.0 || len > SQUARE_BOUNDS.1 {
-        return Err(TransformError::invalid_length(
-            SQUARE_BOUNDS.0,
-            SQUARE_BOUNDS.1,
-        ));
+        return Err(Error::InvalidLength {
+            min: SQUARE_BOUNDS.0,
+            max: SQUARE_BOUNDS.1,
+        });
     }
 
     let chars = collect_chars(&origin);

@@ -8,37 +8,19 @@ pub use self::{
     command::TransformCommand, to_arrow::to_arrow, to_square::to_square, to_star::to_star,
     to_sw::to_sw,
 };
-use std::{error::Error, fmt};
+
+/// Transformation error.
+#[derive(Fail, Debug)]
+#[fail(display = "Transformation error")]
+pub enum Error {
+    #[fail(display = "Text must contain from {} up to {} characters", min, max)]
+    InvalidLength { min: usize, max: usize },
+}
 
 type Bounds = (usize, usize);
 
-pub type TransformResult<T> = Result<T, TransformError>;
-
-#[derive(Debug)]
-pub struct TransformError {
-    description: String,
-}
-
-impl TransformError {
-    fn invalid_length(min: usize, max: usize) -> TransformError {
-        TransformError {
-            description: format!("Text must contain from {} up to {} characters", min, max),
-        }
-    }
-}
-
-impl Error for TransformError {
-    fn description(&self) -> &str {
-        &self.description
-    }
-}
-
-impl fmt::Display for TransformError {
-    fn fmt(&self, out: &mut fmt::Formatter) -> fmt::Result {
-        write!(out, "{}", self.description())
-    }
-}
+type Result<T> = ::std::result::Result<T, Error>;
 
 fn collect_chars(s: &str) -> Vec<char> {
-    s.chars().flat_map(|c| c.to_uppercase()).collect()
+    s.chars().flat_map(char::to_uppercase).collect()
 }

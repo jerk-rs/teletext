@@ -1,10 +1,13 @@
-use super::{collect_chars, Bounds, TransformError, TransformResult};
+use super::{collect_chars, Bounds, Error, Result};
 const STAR_BOUNDS: Bounds = (3, 100);
 
-pub fn to_star(orig: &str) -> TransformResult<String> {
+pub fn to_star(orig: &str) -> Result<String> {
     let len = orig.len();
     if len < STAR_BOUNDS.0 || len > STAR_BOUNDS.1 {
-        return Err(TransformError::invalid_length(STAR_BOUNDS.0, STAR_BOUNDS.1));
+        return Err(Error::InvalidLength {
+            min: STAR_BOUNDS.0,
+            max: STAR_BOUNDS.1,
+        });
     }
 
     let chars = collect_chars(&orig);

@@ -1,10 +1,13 @@
-use super::{collect_chars, Bounds, TransformError, TransformResult};
+use super::{collect_chars, Bounds, Error, Result};
 const SW_BOUNDS: Bounds = (3, 100);
 
-pub fn to_sw(orig: &str) -> TransformResult<String> {
+pub fn to_sw(orig: &str) -> Result<String> {
     let len = orig.len();
     if len < SW_BOUNDS.0 || len > SW_BOUNDS.1 {
-        return Err(TransformError::invalid_length(SW_BOUNDS.0, SW_BOUNDS.1));
+        return Err(Error::InvalidLength {
+            min: SW_BOUNDS.0,
+            max: SW_BOUNDS.1,
+        });
     }
 
     let chars = collect_chars(&orig);
