@@ -1,44 +1,52 @@
-use std::fmt;
-use teleborg::objects::{Chat, Message, Update};
-use teleborg::{Bot, Command, ParseMode};
+use app::send_reply;
+use std::borrow::Cow;
+use teleborg::objects::{Message, Update};
+use teleborg::{Bot, Command};
+use transform::{Error, Result};
 
 pub struct TransformCommand<T>(pub T);
 
-impl<T, E> Command for TransformCommand<T>
+fn extract_data(
+    Message {
+        message_id,
+        reply_to_message,
+        ..
+    }: Message,
+    args: Option<Vec<&str>>,
+) -> (i64, Option<String>) {
+    let reply_to = reply_to_message
+        .as_ref()
+        .map(|reply| reply.message_id)
+        .unwrap_or(message_id);
+    let text = args
+        .filter(|x| !x.is_empty())
+        .map(|x| x.join(" "))
+        .or_else(|| reply_to_message.and_then(|reply| reply.text));
+    (reply_to, text)
+}
+
+impl<T> TransformCommand<T>
 where
-    T: FnMut(&str) -> Result<String, E> + Send + Sync + 'static,
-    E: ToString,
+    T: FnMut(&str) -> Result<String> + Send + Sync + 'static,
+{
+    fn process(&mut self, bot: &Bot, msg: Message, args: Option<Vec<&str>>) {
+        let chat_id = msg.chat.id;
+        let (reply_to, maybe_text) = extract_data(msg, args);
+        let result: CommandResult = maybe_text
+            .ok_or(Error::NoText)
+            .and_then(|text| (self.0)(text.trim()))
+            .into();
+        send_reply(bot, chat_id, &result.as_str(), reply_to);
+    }
+}
+
+impl<T> Command for TransformCommand<T>
+where
+    T: FnMut(&str) -> Result<String> + Send + Sync + 'static,
 {
     fn execute(&mut self, bot: &Bot, update: Update, args: Option<Vec<&str>>) {
-        if let Some(Message {
-            message_id,
-            chat: Chat { id: chat_id, .. },
-            reply_to_message,
-            ..
-        }) = update.message
-        {
-            let result = match args {
-                Some(args) => match (self.0)(args.join(" ").trim()) {
-                    Ok(result) => CommandResult::new(result, true),
-                    Err(err) => CommandResult::new(err.to_string(), false),
-                },
-                None => CommandResult::new("You should provide some text", false),
-            };
-            let reply_to_id = match reply_to_message {
-                Some(r) => r.message_id,
-                None => message_id,
-            };
-            if let Err(err) = bot.send_message(
-                &chat_id,
-                &result.to_string(),
-                Some(&ParseMode::Markdown),
-                None,
-                None,
-                Some(&reply_to_id),
-                None,
-            ) {
-                println!("Failed to send a message: {:?}", err);
-            }
+        if let Some(msg) = update.message {
+            self.process(bot, msg, args);
         }
     }
 }
@@ -49,20 +57,26 @@ struct CommandResult {
 }
 
 impl CommandResult {
-    fn new<S: Into<String>>(data: S, is_monospace: bool) -> CommandResult {
-        CommandResult {
-            data: data.into(),
-            is_monospace,
+    fn as_str(&self) -> Cow<str> {
+        if self.is_monospace {
+            Cow::Owned(format!("```\n{}\n```", self.data))
+        } else {
+            Cow::Borrowed(&self.data)
         }
     }
 }
 
-impl fmt::Display for CommandResult {
-    fn fmt(&self, out: &mut fmt::Formatter) -> fmt::Result {
-        if self.is_monospace {
-            write!(out, "```\n{}\n```", self.data)
-        } else {
-            write!(out, "{}", self.data)
+impl From<Result<String>> for CommandResult {
+    fn from(res: Result<String>) -> Self {
+        match res {
+            Ok(data) => CommandResult {
+                data,
+                is_monospace: true,
+            },
+            Err(e) => CommandResult {
+                data: e.to_string(),
+                is_monospace: false,
+            },
         }
     }
 }

@@ -15,6 +15,8 @@ pub use self::{
 pub enum Error {
     #[fail(display = "Text must contain from {} up to {} characters", min, max)]
     InvalidLength { min: usize, max: usize },
+    #[fail(display = "You should provide some text")]
+    NoText,
 }
 
 type Bounds = (usize, usize);
