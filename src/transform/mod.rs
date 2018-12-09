@@ -1,13 +1,13 @@
+mod arrow;
 mod command;
 mod huify;
-mod to_arrow;
-mod to_square;
-mod to_star;
-mod to_sw;
+mod square;
+mod star;
+mod sw;
 
 pub use self::{
-    command::TransformCommand, huify::huify, to_arrow::to_arrow, to_square::to_square,
-    to_star::to_star, to_sw::to_sw,
+    arrow::to_arrow, command::TransformCommand, huify::huify, square::to_square, star::to_star,
+    sw::to_sw,
 };
 
 /// Transformation error.
