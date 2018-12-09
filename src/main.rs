@@ -1,6 +1,3 @@
-extern crate dotenv;
-extern crate teletext;
-
 use dotenv::dotenv;
 use std::env;
 use teletext::run;

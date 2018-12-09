@@ -1,8 +1,8 @@
-use app::send_reply;
+use crate::app::send_reply;
+use crate::transform::{Error, Result};
 use std::borrow::Cow;
 use teleborg::objects::{Message, Update};
 use teleborg::{Bot, Command};
-use transform::{Error, Result};
 
 pub struct TransformCommand<T>(pub T);
 
@@ -57,7 +57,7 @@ struct CommandResult {
 }
 
 impl CommandResult {
-    fn as_str(&self) -> Cow<str> {
+    fn as_str(&self) -> Cow<'_, str> {
         if self.is_monospace {
             Cow::Owned(format!("```\n{}\n```", self.data))
         } else {

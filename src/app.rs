@@ -1,6 +1,6 @@
+use crate::transform::{self, TransformCommand};
 use teleborg::objects::InlineKeyboardMarkup;
 use teleborg::{Bot, Dispatcher, ParseMode, Updater};
-use transform::{self, TransformCommand};
 
 pub fn run<S: Into<String>>(token: S) {
     let mut dispatcher = Dispatcher::new();

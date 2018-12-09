@@ -1,6 +1,4 @@
 #![feature(box_patterns)]
-extern crate teleborg;
-
 #[macro_use]
 extern crate failure;
 
