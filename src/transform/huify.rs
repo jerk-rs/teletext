@@ -1,8 +1,20 @@
-use super::Result;
+use super::TransformResult;
+
 const VOWELS: [char; 10] = ['а', 'е', 'ё', 'и', 'о', 'у', 'э', 'ы', 'ю', 'я'];
 
-pub fn huify(orig: &str) -> Result<String> {
-    Ok(huify_sentence(orig))
+pub fn transform(orig: &str) -> TransformResult<String> {
+    let mut result = String::with_capacity(orig.len() * 2);
+    for (idx, word) in orig.to_lowercase().split_whitespace().enumerate() {
+        if idx != 0 {
+            result.push(' ');
+        }
+        if let Some(huified) = huify_word(word) {
+            result += &huified;
+        } else {
+            result += word;
+        }
+    }
+    Ok(result)
 }
 
 #[allow(clippy::trivially_copy_pass_by_ref)]
@@ -23,8 +35,7 @@ fn should_huify(s: &str) -> bool {
     }
 }
 
-pub fn huify_word(s: &str) -> Option<String> {
-    println!("{:?} {}", s, s.len());
+fn huify_word(s: &str) -> Option<String> {
     if s.len() == 1 {
         return None;
     }
@@ -48,27 +59,12 @@ pub fn huify_word(s: &str) -> Option<String> {
     Some(result)
 }
 
-fn huify_sentence(s: &str) -> String {
-    let mut result = String::with_capacity(s.len() * 2);
-    for (idx, word) in s.to_lowercase().split_whitespace().enumerate() {
-        if idx != 0 {
-            result.push(' ');
-        }
-        if let Some(huified) = huify_word(word) {
-            result += &huified;
-        } else {
-            result += word;
-        }
-    }
-    result
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn test_huify_sentence() {
+    fn ok() {
         for (input, expected) in vec![
             ("Значимость этих проблем настолько очевидна", "хуячимость хуетих хуёблем хуястолько хуёчевидна"),
             ("Андрей", "хуяндрей"),
@@ -79,7 +75,7 @@ mod tests {
             ("ху", "хую"),
             ("хуякс", "хуякс")
         ] {
-            assert_eq!(huify_sentence(input), expected);
+            assert_eq!(transform(input).unwrap(), expected);
         }
     }
 }

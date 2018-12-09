@@ -1,16 +1,11 @@
-use super::{collect_chars, Bounds, Error, Result};
-const SW_BOUNDS: Bounds = (3, 100);
+use super::{
+    utils::{collect_uppercase_chars, validate_len},
+    TransformResult,
+};
 
-pub fn to_sw(orig: &str) -> Result<String> {
-    let len = orig.len();
-    if len < SW_BOUNDS.0 || len > SW_BOUNDS.1 {
-        return Err(Error::InvalidLength {
-            min: SW_BOUNDS.0,
-            max: SW_BOUNDS.1,
-        });
-    }
-
-    let chars = collect_chars(&orig);
+pub fn transform(orig: &str) -> TransformResult<String> {
+    validate_len(3, 100, orig.len())?;
+    let chars = collect_uppercase_chars(&orig);
     let len = chars.len();
     let mut buf = String::new(); // TODO: calc capacity
 
@@ -68,8 +63,8 @@ mod tests {
     use super::*;
 
     #[test]
-    fn sw() {
-        let transformed = to_sw("rurust").unwrap();
+    fn ok() {
+        let transformed = transform("rurust").unwrap();
         let mut lines = transformed.lines();
         assert_eq!(lines.next(), Some("R         T S U R U R "));
         assert_eq!(lines.next(), Some("U         S"));
@@ -82,5 +77,22 @@ mod tests {
         assert_eq!(lines.next(), Some("          U         R"));
         assert_eq!(lines.next(), Some("          S         U"));
         assert_eq!(lines.next(), Some("R U R U S T         R"));
+    }
+
+    #[test]
+    fn err() {
+        let expected = String::from("Text must contain from 3 up to 100 characters");
+
+        let err = transform("").unwrap_err();
+        assert_eq!(err.to_string(), expected);
+
+        let err = transform("aa").unwrap_err();
+        assert_eq!(err.to_string(), expected);
+
+        let err = transform(&"a".repeat(101)).unwrap_err();
+        assert_eq!(err.to_string(), expected);
+
+        assert_eq!(transform(&"a".repeat(3)).is_ok(), true);
+        assert_eq!(transform(&"a".repeat(100)).is_ok(), true);
     }
 }

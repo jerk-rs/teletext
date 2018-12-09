@@ -1,29 +1,20 @@
 mod arrow;
-mod command;
 mod huify;
 mod square;
 mod star;
 mod sw;
+mod utils;
 
-pub use self::{
-    arrow::to_arrow, command::TransformCommand, huify::huify, square::to_square, star::to_star,
-    sw::to_sw,
-};
+pub use self::arrow::transform as to_arrow;
+pub use self::huify::transform as to_huified;
+pub use self::square::transform as to_square;
+pub use self::star::transform as to_star;
+pub use self::sw::transform as to_sw;
 
-/// Transformation error.
 #[derive(Fail, Debug)]
-#[fail(display = "Transformation error")]
-pub enum Error {
+pub enum TransformError {
     #[fail(display = "Text must contain from {} up to {} characters", min, max)]
     InvalidLength { min: usize, max: usize },
-    #[fail(display = "You should provide some text")]
-    NoText,
 }
 
-type Bounds = (usize, usize);
-
-type Result<T> = ::std::result::Result<T, Error>;
-
-fn collect_chars(s: &str) -> Vec<char> {
-    s.chars().flat_map(char::to_uppercase).collect()
-}
+pub type TransformResult<T> = Result<T, TransformError>;

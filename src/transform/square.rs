@@ -1,17 +1,11 @@
-use super::{collect_chars, Bounds, Error, Result};
+use super::{
+    utils::{collect_uppercase_chars, validate_len},
+    TransformResult,
+};
 
-const SQUARE_BOUNDS: Bounds = (2, 100);
-
-pub fn to_square(origin: &str) -> Result<String> {
-    let len = origin.len();
-    if len < SQUARE_BOUNDS.0 || len > SQUARE_BOUNDS.1 {
-        return Err(Error::InvalidLength {
-            min: SQUARE_BOUNDS.0,
-            max: SQUARE_BOUNDS.1,
-        });
-    }
-
-    let chars = collect_chars(&origin);
+pub fn transform(orig: &str) -> TransformResult<String> {
+    validate_len(2, 100, orig.len())?;
+    let chars = collect_uppercase_chars(&orig);
     let len = chars.len();
     let side = len * 2 - 1;
     let area = side * side;
@@ -39,8 +33,8 @@ mod tests {
     use super::*;
 
     #[test]
-    fn square() {
-        let transformed = to_square("text").unwrap();
+    fn ok() {
+        let transformed = transform("text").unwrap();
         let mut lines = transformed.lines();
         assert_eq!(lines.next(), Some("T T T T T T T"));
         assert_eq!(lines.next(), Some("T X X X X X T"));
@@ -49,5 +43,22 @@ mod tests {
         assert_eq!(lines.next(), Some("T X E E E X T"));
         assert_eq!(lines.next(), Some("T X X X X X T"));
         assert_eq!(lines.next(), Some("T T T T T T T"));
+    }
+
+    #[test]
+    fn err() {
+        let expected = String::from("Text must contain from 2 up to 100 characters");
+
+        let err = transform("").unwrap_err();
+        assert_eq!(err.to_string(), expected);
+
+        let err = transform("a").unwrap_err();
+        assert_eq!(err.to_string(), expected);
+
+        let err = transform(&"a".repeat(101)).unwrap_err();
+        assert_eq!(err.to_string(), expected);
+
+        assert_eq!(transform(&"a".repeat(3)).is_ok(), true);
+        assert_eq!(transform(&"a".repeat(100)).is_ok(), true);
     }
 }
