@@ -7,7 +7,7 @@ pub fn transform(orig: &str) -> TransformResult<String> {
     validate_len(3, 100, orig.len())?;
     let chars = collect_uppercase_chars(&orig);
     let len = chars.len();
-    let mut buf = String::new(); // TODO: calc capacity
+    let mut buf = String::with_capacity(len * len * 2);
 
     // top line
     for (i, &c) in chars.iter().enumerate() {
