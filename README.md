@@ -7,6 +7,7 @@ A telegram bot to transform text
 # Available commands:
 
 - `/arrow`
+- `/huify`
 - `/square`
 - `/star`
 - `/sw`
@@ -24,14 +25,18 @@ EOF
 $ /target/release/teletext
 ```
 
-You can add `ALL_PROXY='socks5h://user:pass@host:port'`
-to `.env` file in order to use a socks5 proxy.
-
 # Changelog
+
+### 0.1.4 (10.12.2018)
+
+- Migrated to teleborg.
+- Added replies support.
+- Added `/huify` command.
+- Renamed `/qstar` to `/arrow`.
 
 ### 0.1.3 (27.05.2018)
 
-- Add sw command.
+- Added `/sw` command.
 
 ### 0.1.2 (27.05.2018)
 
