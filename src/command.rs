@@ -1,4 +1,5 @@
 use crate::transform::{TransformError, TransformResult};
+use log::error;
 use teleborg::objects::{InlineKeyboardMarkup, Message, Update};
 use teleborg::{Bot, Command, ParseMode};
 
@@ -27,8 +28,7 @@ fn send_reply(bot: &Bot, chat_id: i64, text: &str, reply_to: i64) {
         DEFAULT_REPLY_MARKUP,
     );
     if let Err(err) = res {
-        // TODO: use a logger
-        println!("Failed to send a message: {:?}", err);
+        error!("Failed to send a message: {:?}", err);
     }
 }
 
