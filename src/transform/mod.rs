@@ -2,14 +2,12 @@ mod arrow;
 mod huify;
 mod square;
 mod star;
-mod sw;
 mod utils;
 
 pub use self::arrow::transform as to_arrow;
 pub use self::huify::transform as to_huified;
 pub use self::square::transform as to_square;
 pub use self::star::transform as to_star;
-pub use self::sw::transform as to_sw;
 
 #[derive(Fail, Debug)]
 pub enum TransformError {
